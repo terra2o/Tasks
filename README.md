@@ -30,7 +30,8 @@ chmod +x build-flatpak.sh
 ```
 
 ### Windows
-```git clone https://github.com/terra2o/Tasks.git
+```
+git clone https://github.com/terra2o/Tasks.git
 cd Tasks
 dotnet publish -c Release -r win-x64 --self-contained true
 ```

@@ -1,0 +1,65 @@
+# =========================
+# .NET / C# build outputs
+# =========================
+bin/
+obj/
+**/bin/
+**/obj/
+
+# Published binaries
+publish/
+**/publish/
+
+# Native binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.pdb
+*.mdb
+
+# .NET runtime artifacts
+*.deps.json
+*.runtimeconfig.json
+
+# =========================
+# Flatpak
+# =========================
+.flatpak-builder/
+build-dir/
+*.flatpak
+*.flatpakref
+*.flatpakrepo
+
+# =========================
+# Avalonia / UI caches
+# =========================
+*.cache
+*.log
+
+# =========================
+# IDEs
+# =========================
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.rsuser
+
+# =========================
+# OS junk
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# =========================
+# Archives
+# =========================
+*.zip
+*.tar.gz
+*.tar.xz

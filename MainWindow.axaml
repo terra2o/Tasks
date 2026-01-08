@@ -1,0 +1,86 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Tasks"
+        x:Class="Tasks.MainWindow"
+        x:DataType="local:MainWindow"
+        MinWidth="400" MinHeight="300"
+        Width="700" Height="450"
+        WindowStartupLocation="CenterScreen"
+        Title="Tasks">
+
+    <SplitView DisplayMode="Inline"
+               IsPaneOpen="True"
+               OpenPaneLength="260"
+               CompactPaneLength="50">
+
+        <!-- SIDEBAR -->
+        <SplitView.Pane>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid RowDefinitions="Auto,*" Margin="8">
+
+                    <!-- TOP BAR -->
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                        <TextBlock Text="Tasks" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <Button x:Name="FlyoutButton"
+                                Content="+"
+                                Width="36" Height="36"
+                                HorizontalAlignment="Right"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <StackPanel Spacing="8" Width="240">
+                                        <TextBox x:Name="NameBox"
+                                                Watermark="Task name"
+                                                MaxLength="30"
+                                                KeyUp="NameBox_KeyUp"/>
+                                        <Button Content="Add" Click="ConfirmAdd"/>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </Grid>
+
+                    <!-- DYNAMIC BUTTONS -->
+                    <ItemsControl x:Name="SidebarItems"
+                                Grid.Row="1"
+                                ItemsSource="{Binding Lists}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:TaskItem">
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="2">
+                                    <Button Content="{Binding Name}"
+                                            Click="SwitchTask"
+                                    >
+                                        <Button.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Remove" Click="RemoveTask_Click"/>
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
+                                    </Button>
+                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </Grid>
+            </ScrollViewer>
+        </SplitView.Pane>
+
+        <!-- MAIN CONTENT -->
+        <SplitView.Content>
+            <Border Padding="12">
+                <ContentControl Content="{Binding SelectedTask}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate x:DataType="local:TaskItem">
+                            <TextBox Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
+            </Border>
+        </SplitView.Content>
+    </SplitView>
+</Window>

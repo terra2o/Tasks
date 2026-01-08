@@ -1,0 +1,67 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Tasks.App"
+             RequestedThemeVariant="Default">
+
+    <Application.Styles>
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Light" AltHigh="White" AltLow="White" AltMedium="White" AltMediumHigh="White" AltMediumLow="White" BaseHigh="Black" BaseLow="#ffcccccc" BaseMedium="#ff898989" BaseMediumHigh="#ff5d5d5d" BaseMediumLow="#ff737373" ChromeAltLow="#ff5d5d5d" ChromeBlackHigh="Black" ChromeBlackLow="#ffcccccc" ChromeBlackMedium="#ff5d5d5d" ChromeBlackMediumLow="#ff898989" ChromeDisabledHigh="#ffcccccc" ChromeDisabledLow="#ff898989" ChromeGray="#ff737373" ChromeHigh="#ffcccccc" ChromeLow="#ffececec" ChromeMedium="#ffe6e6e6" ChromeMediumLow="#ffececec" ChromeWhite="White" ListLow="#ffe6e6e6" ListMedium="#ffcccccc" RegionColor="#F2F2F4" />
+                <ColorPaletteResources x:Key="Dark" AltHigh="#FF1F1F1F" AltLow="#FF1F1F1F" AltMedium="#FF1F1F1F" AltMediumHigh="#FF1F1F1F" AltMediumLow="#FF1F1F1F" BaseHigh="White" BaseLow="#ff333333" BaseMedium="#ff9a9a9a" BaseMediumHigh="#ffb4b4b4" BaseMediumLow="#ff676767" ChromeAltLow="#ffb4b4b4" ChromeBlackHigh="#FF1F1F1F" ChromeBlackLow="#ffb4b4b4" ChromeBlackMedium="#FF1F1F1F" ChromeBlackMediumLow="#FF1F1F1F" ChromeDisabledHigh="#ff333333" ChromeDisabledLow="#ff9a9a9a" ChromeGray="Gray" ChromeHigh="Gray" ChromeLow="#28282C" ChromeMedium="#ff1d1d1d" ChromeMediumLow="#ff2c2c2c" ChromeWhite="White" ListLow="#ff1d1d1d" ListMedium="#ff333333" RegionColor="#222226" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+
+        <Style Selector="TextBox">
+            <Setter Property="Background"
+                    Value="{DynamicResource TextBoxBg}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource ThemeChromeBlackMedium}" />
+        </Style>
+
+        <Style Selector="TextBox:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeChromeBlackHigh}" />
+        </Style>
+
+        <Style Selector="TextBox:readonly">
+            <Setter Property="Background" Value="{DynamicResource TextBoxBg}" />
+        </Style>
+
+        <Style Selector="TextBox:disabled">
+            <Setter Property="Background" Value="{DynamicResource ThemeChromeLow}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeChromeDisabledLow}" />
+        </Style>
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+
+                <!-- LIGHT -->
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="ThemeControlHighlightLowBrush"
+                                    Color="#00000000"/>
+                    <SolidColorBrush x:Key="ThemeControlHighlightMediumBrush"
+                                    Color="#00000000"/>
+                    <SolidColorBrush x:Key="TextBoxBackgroundFocused"
+                                    Color="#FFF5F5F5"/>
+                    <SolidColorBrush x:Key="TextBoxBackground"
+                                    Color="#FFE9E9"/>
+                </ResourceDictionary>
+
+                <!-- DARK -->
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="ThemeControlHighlightLowBrush"
+                                    Color="#00000000"/>
+                    <SolidColorBrush x:Key="ThemeControlHighlightMediumBrush"
+                                    Color="#00000000"/>
+                    <SolidColorBrush x:Key="TextBoxBackgroundFocused"
+                                    Color="#FF3C3C3C"/>
+                    <SolidColorBrush x:Key="TextBoxBackground"
+                                    Color="#FF2A2A2A"/>
+                </ResourceDictionary>
+
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+</Application>

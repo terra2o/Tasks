@@ -1,0 +1,41 @@
+app-id: io.github.terra2o.Tasks
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+
+command: Tasks
+
+finish-args:
+  # Display servers
+  - --socket=x11
+  - --socket=wayland
+
+  # GPU acceleration
+  - --device=dri
+
+  # User files
+  - --filesystem=home
+  - --filesystem=xdg-config
+  - --filesystem=xdg-data
+
+  # Portals (file picker, dialogs, theming)
+  - --talk-name=org.freedesktop.portal.Desktop
+  - --talk-name=org.freedesktop.portal.FileChooser
+
+modules:
+  - name: tasks
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 Tasks /app/bin/Tasks
+      - install -Dm644 io.github.terra2o.Tasks.desktop /app/share/applications/io.github.terra2o.Tasks.desktop
+      - install -Dm644 io.github.terra2o.Tasks.png /app/share/icons/hicolor/256x256/apps/io.github.terra2o.Tasks.png
+
+    sources:
+      - type: file
+        path: bin/Release/net9.0/linux-x64/publish/Tasks
+
+      - type: file
+        path: packaging/io.github.terra2o.Tasks.desktop
+
+      - type: file
+        path: packaging/io.github.terra2o.Tasks.png

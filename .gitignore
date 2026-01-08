@@ -27,6 +27,7 @@ publish/
 # =========================
 # Flatpak
 # =========================
+repo/
 .flatpak-builder/
 build-dir/
 *.flatpak

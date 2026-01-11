@@ -11,6 +11,9 @@ A minimal desktop to-do app built with Avalonia, designed for instant use with a
 - Reactive UI with data binding
 - Cross-platform (Linux, macOS, Windows)
 
+## Run
+Go to [here](https://github.com/terra2o/Tasks/releases/) and download the latest release for your OS.
+
 ## Building
 ### Prerequisites
 - .NET 9.0

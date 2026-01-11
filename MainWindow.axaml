@@ -6,7 +6,8 @@
         MinWidth="400" MinHeight="300"
         Width="700" Height="450"
         WindowStartupLocation="CenterScreen"
-        Title="Tasks">
+        Title="Tasks"
+        Icon="/packaging/io.github.terra2o.Tasks.png">
 
     <SplitView DisplayMode="Inline"
                IsPaneOpen="True"

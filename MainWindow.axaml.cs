@@ -1,6 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Reactive;
+using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -34,6 +37,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private Button? _flyoutButton;
 
     private bool _suspendSave = false;
+    private string ?_renameBackup;
+
+    DispatcherTimer? _saveTimer;
 
     public MainWindow()
     {
@@ -78,6 +84,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    protected override void OnClosed(EventArgs e)
+    {
+        Lists.CollectionChanged -= Lists_CollectionChanged;
+        Opened -= OnOpened;
+
+        foreach (var t in Lists)
+            t.PropertyChanged -= TaskItem_PropertyChanged;
+
+        base.OnClosed(e);
+    }
+
     private void PopulateTasks(TaskData[] tasks)
     {
         Lists.Clear();
@@ -85,7 +102,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         foreach (var t in tasks)
         {
             var name = (t.Name ?? "").Trim();
-            if (string.IsNullOrEmpty(name)) continue;
+            if (string.IsNullOrWhiteSpace(name)) continue;
 
             var item = new TaskItem
             {
@@ -114,9 +131,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         var nameRaw = _nameBox.Text ?? "";
         var name = nameRaw.Trim();
-        if (string.IsNullOrEmpty(name)) return;
-
-        if (name.Length > 30) name = name.Substring(0, 30);
+        if (string.IsNullOrWhiteSpace(name)) return;
 
         // Checking if ANY existing task already has the same name.
         // Detect a duplicate, abort the add, clear input only for UX.
@@ -148,13 +163,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             SelectedTask = clickedTask;
             return;
         }
-
-        // Fallback: match by name if Content is the name.
-        if (sender is Button fallbackBtn && fallbackBtn.Content is string name)
-        {
-            var match = Lists.FirstOrDefault(t => t.Name == name);
-            if (match != null) SelectedTask = match;
-        }
     }
 
     private void RemoveTask_Click(object? sender, RoutedEventArgs e)
@@ -165,6 +173,75 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    private void RenameTask_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem mi &&
+            mi.DataContext is TaskItem task)
+        {
+            foreach (var t in Lists)
+                t.IsRenaming = false;
+
+            _renameBackup = task.Name;
+            task.IsRenaming = true;
+        }
+    }
+
+    private void CommitRename(TaskItem task)
+    {
+        if (string.IsNullOrWhiteSpace(task.Name))
+        {
+            task.Name = _renameBackup!;
+        }
+        if (Lists.Any(t => t != task &&
+            string.Equals(t.Name, task.Name, StringComparison.Ordinal)))
+        {
+            task.Name = _renameBackup!;
+        }
+
+
+        task.IsRenaming = false;
+    }
+
+    private void Rename_KeyUp(object? sender, KeyEventArgs e)
+    {
+        if (sender is TextBox tb &&
+            tb.DataContext is TaskItem task &&
+            e.Key == Key.Enter)
+        {
+            CommitRename(task);
+            e.Handled = true;
+        }
+    }
+
+    private void Rename_LostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox tb &&
+            tb.DataContext is TaskItem task)
+        {
+            CommitRename(task);
+        }
+    }
+
+    private void RenameBox_AttachedToVisualTree(
+        object? sender,
+        VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is not TextBox tb)
+            return;
+
+        tb.PropertyChanged += (_, args) =>
+        {
+            if (args.Property == IsVisibleProperty &&
+                tb.IsVisible)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    tb.Focus();
+                    tb.SelectAll();
+                }, DispatcherPriority.Background);
+            }
+        };
+    }
 
     private void RemoveTask(TaskItem task)
     {
@@ -177,16 +254,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void Lists_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_suspendSave) return;
-        try { SaveTasks(GetDataFilePath()); } catch (Exception ex) { Console.WriteLine($"Save error: {ex}"); }
+        try { RequestSave(); } catch (Exception ex) { Console.WriteLine($"Save error: {ex}"); }
     }
 
     private void TaskItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (_suspendSave) return;
-        if (e.PropertyName == nameof(TaskItem.IsChecked) || e.PropertyName == nameof(TaskItem.Content))
-        {
-            try { SaveTasks(GetDataFilePath()); } catch (Exception ex) { Console.WriteLine($"Save error: {ex}"); }
-        }
+
+        if (e.PropertyName == nameof(TaskItem.IsRenaming))
+            return;
+
+        RequestSave();
     }
 
     private void NameBox_KeyUp(object? sender, KeyEventArgs e)
@@ -225,6 +303,24 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    private void RequestSave()
+    {
+        _saveTimer ??= new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(400)
+        };
+
+        _saveTimer.Tick -= SaveTick;
+        _saveTimer.Tick += SaveTick;
+        _saveTimer.Start();
+    }
+
+    private void SaveTick(object? sender, EventArgs e)
+    {
+        _saveTimer!.Stop();
+        SaveTasks(GetDataFilePath());
+    }
+
     private static string GetDataFilePath()
     {
         string folder;
@@ -245,7 +341,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 public class TaskItem : INotifyPropertyChanged
 {
     private string _name = "";
+    private bool _isRenaming;
     public string Name
+    
     {
         get => _name;
         set
@@ -253,6 +351,19 @@ public class TaskItem : INotifyPropertyChanged
             if (_name == value) return;
             _name = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+        }
+    }
+
+    public bool IsRenaming
+    {
+        get => _isRenaming;
+        set
+        {
+            if (_isRenaming == value) return;
+            _isRenaming = value;
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(IsRenaming)));
         }
     }
 

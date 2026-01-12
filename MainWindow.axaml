@@ -16,7 +16,8 @@
 
         <!-- SIDEBAR -->
         <SplitView.Pane>
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Auto" >
                 <Grid RowDefinitions="Auto,*" Margin="8">
 
                     <!-- TOP BAR -->
@@ -49,15 +50,27 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:TaskItem">
                                 <StackPanel Orientation="Horizontal" Spacing="8" Margin="2">
+
                                     <Button Content="{Binding Name}"
-                                            Click="SwitchTask"
-                                    >
+                                            IsVisible="{Binding !IsRenaming}"
+                                            Click="SwitchTask" >
                                         <Button.ContextMenu>
                                             <ContextMenu>
+                                                <MenuItem Header="Rename" Click="RenameTask_Click" />
                                                 <MenuItem Header="Remove" Click="RemoveTask_Click"/>
                                             </ContextMenu>
                                         </Button.ContextMenu>
                                     </Button>
+                                    <!-- RENAMING BUTTON-->
+                                    <TextBox x:Name="RenameBox" 
+                                            Text="{Binding Name, Mode=TwoWay}"
+                                            IsVisible="{Binding IsRenaming}"
+                                            MaxLength="30"
+                                            Width="80"
+                                            AttachedToVisualTree="RenameBox_AttachedToVisualTree"
+                                            LostFocus="Rename_LostFocus"
+                                            KeyUp="Rename_KeyUp"/>
+
                                     <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
                                 </StackPanel>
                             </DataTemplate>

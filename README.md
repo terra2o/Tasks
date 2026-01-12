@@ -43,13 +43,26 @@ git clone https://github.com/terra2o/Tasks.git
 cd Tasks
 dotnet publish -c Release -r win-x64 --self-contained true
 ```
+### macOS (Silicon)
+```bash
+git clone https://github.com/terra2o/Tasks.git
+cd Tasks
+dotnet publish -c Release -r osx-arm64 --self-contained true
+```
+
+### macOS (Intel)
+```
+git clone https://github.com/terra2o/Tasks.git
+cd Tasks
+dotnet publish -c Release -r osx-x64 --self-contained true
+```
 
 ## Data storage
-
 Tasks are stored locally as JSON:
 
 - Linux: `~/.config/Tasks_terra2o/tasks.json`
 - Windows: `%APPDATA%\Tasks_terra2o\tasks.json`
+- macOS: `~/Library/Application Support/Tasks_terra2o/tasks.json`
 
 ## Why this exists
 

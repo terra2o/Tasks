@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Reactive;
 using Avalonia.Threading;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -37,7 +38,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private Button? _flyoutButton;
 
     private bool _suspendSave = false;
-    private string ?_renameBackup;
 
     DispatcherTimer? _saveTimer;
 
@@ -86,15 +86,36 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     protected override void OnClosed(EventArgs e)
     {
+        // Stopping any pending autosave to avoid race conditions
+        if (_saveTimer is not null)
+        {
+            _saveTimer.Stop();
+            _saveTimer.Tick -= SaveTick;
+        }
+        // Forcing a final synchronous save
+        try
+        {
+            SaveTasks(GetDataFilePath());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Final save failed: {ex}");
+        }
+
         Lists.CollectionChanged -= Lists_CollectionChanged;
         Opened -= OnOpened;
 
+        // Unsubscribing from TaskItem.PropertyChanged to avoid
+        // leaking MainWindow instances via event handler references.
         foreach (var t in Lists)
             t.PropertyChanged -= TaskItem_PropertyChanged;
 
         base.OnClosed(e);
     }
-
+    
+    // IMPORTANT: Must be called on the UI thread.
+    // ObservableCollection raises change notifications on the calling thread;
+    // mutating it off the UI thread will crash or corrupt Avalonia bindings.
     private void PopulateTasks(TaskData[] tasks)
     {
         Lists.Clear();
@@ -150,10 +171,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _flyoutButton?.Flyout?.Hide();
     }
 
+    // IMPORTANT: Must be called on the UI thread.
+    // ObservableCollection raises change notifications on the calling thread;
+    // mutating it off the UI thread will crash or corrupt Avalonia bindings.
     private void AddTask(TaskItem item)
     {
         Lists.Add(item);
-        item.PropertyChanged += TaskItem_PropertyChanged; // Guarantees every task gets its PropertyChanged hooked.
+        // Guarantees every task gets its PropertyChanged hooked.
+        item.PropertyChanged += TaskItem_PropertyChanged;
     }
 
     private void SwitchTask(object? sender, RoutedEventArgs e)
@@ -181,25 +206,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             foreach (var t in Lists)
                 t.IsRenaming = false;
 
-            _renameBackup = task.Name;
-            task.IsRenaming = true;
+            task.BeginRename();
         }
-    }
-
-    private void CommitRename(TaskItem task)
-    {
-        if (string.IsNullOrWhiteSpace(task.Name))
-        {
-            task.Name = _renameBackup!;
-        }
-        if (Lists.Any(t => t != task &&
-            string.Equals(t.Name, task.Name, StringComparison.Ordinal)))
-        {
-            task.Name = _renameBackup!;
-        }
-
-
-        task.IsRenaming = false;
     }
 
     private void Rename_KeyUp(object? sender, KeyEventArgs e)
@@ -208,7 +216,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             tb.DataContext is TaskItem task &&
             e.Key == Key.Enter)
         {
-            CommitRename(task);
+            task.CommitRename(Lists);
             e.Handled = true;
         }
     }
@@ -218,7 +226,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (sender is TextBox tb &&
             tb.DataContext is TaskItem task)
         {
-            CommitRename(task);
+            task.CommitRename(Lists);
         }
     }
 
@@ -243,6 +251,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         };
     }
 
+    // IMPORTANT: Must be called on the UI thread.
+    // ObservableCollection raises change notifications on the calling thread;
+    // mutating it off the UI thread will crash or corrupt Avalonia bindings.
     private void RemoveTask(TaskItem task)
     {
         task.PropertyChanged -= TaskItem_PropertyChanged;
@@ -310,6 +321,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             Interval = TimeSpan.FromMilliseconds(400)
         };
 
+        // Remove previous Tick handler to avoid accumulating handlers.
+        // Without this, each RequestSave() would cause SaveTasks() to run multiple times per tick.
         _saveTimer.Tick -= SaveTick;
         _saveTimer.Tick += SaveTick;
         _saveTimer.Start();
@@ -342,6 +355,7 @@ public class TaskItem : INotifyPropertyChanged
 {
     private string _name = "";
     private bool _isRenaming;
+    private string ?_renameBackup;
     public string Name
     
     {
@@ -352,6 +366,24 @@ public class TaskItem : INotifyPropertyChanged
             _name = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
         }
+    }
+
+    public void BeginRename()
+    {
+        _renameBackup = _name;
+        IsRenaming = true;
+    }
+
+    public void CommitRename(IEnumerable<TaskItem> allTasks)
+    {
+        if (string.IsNullOrWhiteSpace(Name) || 
+        allTasks.Any(t => t != this && string.Equals(t.Name, Name, StringComparison.Ordinal)))
+        {
+            Name = _renameBackup!;
+        }
+
+        IsRenaming = false;
+        _renameBackup = null;
     }
 
     public bool IsRenaming

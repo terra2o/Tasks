@@ -1,9 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Reactive;
-using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,6 +7,12 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Reactive;
+using Avalonia.Threading;
 
 namespace Tasks;
 
@@ -112,7 +112,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         base.OnClosed(e);
     }
-    
+
     // IMPORTANT: Must be called on the UI thread.
     // ObservableCollection raises change notifications on the calling thread;
     // mutating it off the UI thread will crash or corrupt Avalonia bindings.
@@ -129,7 +129,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 Name = name,
                 Content = t.Content ?? "",
-                IsChecked = t.IsChecked
+                IsChecked = t.IsChecked,
+                Index = t.Index
             };
 
             AddTask(item);
@@ -292,6 +293,53 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         public string Name { get; set; } = "";
         public string Content { get; set; } = "";
         public bool IsChecked { get; set; } = false;
+        public int Index { get; set; } = 0;
+    }
+
+    public void MoveTaskUp_Click(object sender, RoutedEventArgs args)
+    {
+        if (sender is MenuItem mi &&
+            mi.DataContext is TaskItem task)
+        {
+            MoveTaskUp(task);
+        }
+    }
+
+    public void MoveTaskDown_Click(object sender, RoutedEventArgs args)
+    {
+        if (sender is MenuItem mi &&
+            mi.DataContext is TaskItem task)
+        {
+            MoveTaskDown(task);
+        }
+    }
+
+    public void MoveTaskUp(TaskItem task)
+    {
+        int currentIndex = Lists.IndexOf(task);
+        if (currentIndex > 0)
+        {
+            Lists.Move(currentIndex, currentIndex - 1);
+
+            for (int i = 0; i < Lists.Count; i++)
+                Lists[i].Index = i;
+
+            RequestSave();
+        }
+    }
+
+    public void MoveTaskDown(TaskItem task)
+    {
+        int currentIndex = Lists.IndexOf(task);
+        if (currentIndex < Lists.Count - 1)
+        {
+            Lists.Move(currentIndex, currentIndex + 1);
+
+            for (int i = 0; i < Lists.Count; i++)
+                Lists[i].Index = i;
+
+            RequestSave();
+        }
     }
 
     private void SaveTasks(string filePath)
@@ -355,9 +403,21 @@ public class TaskItem : INotifyPropertyChanged
 {
     private string _name = "";
     private bool _isRenaming;
-    private string ?_renameBackup;
+    private string? _renameBackup;
+
+    private int _index = 0;
+    public int Index
+    {
+        get => _index;
+        set
+        {
+            if (_index == value) return;
+            _index = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Index)));
+        }
+    }
+
     public string Name
-    
     {
         get => _name;
         set
@@ -376,7 +436,7 @@ public class TaskItem : INotifyPropertyChanged
 
     public void CommitRename(IEnumerable<TaskItem> allTasks)
     {
-        if (string.IsNullOrWhiteSpace(Name) || 
+        if (string.IsNullOrWhiteSpace(Name) ||
         allTasks.Any(t => t != this && string.Equals(t.Name, Name, StringComparison.Ordinal)))
         {
             Name = _renameBackup!;

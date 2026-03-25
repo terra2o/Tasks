@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.terra2o.Tasks</id>
+  <name>Tasks</name>
+  <summary>Task management application</summary>
+
+  <description>
+    <p>
+      Tasks is a desktop app for managing personal to-do items.
+    </p>
+  </description>
+
+  <categories>
+    <category>Utility</category>
+  </categories>
+
+  <url type="homepage">https://github.com/terra2o/Tasks</url>
+  <url type="bugtracker">https://github.com/terra2o/Tasks/issues</url>
+
+  <developer id="io.github.terra2o">
+    <name>terra2o</name>
+  </developer>
+
+  <launchable type="desktop-id">
+    io.github.terra2o.Tasks.desktop
+  </launchable>
+
+  <provides>
+    <binary>Tasks</binary>
+  </provides>
+
+  <releases>
+    <release version="0.5.0" date="2026-08-01"/>
+  </releases>
+
+  <content_rating type="oars-1.1" />
+</component>

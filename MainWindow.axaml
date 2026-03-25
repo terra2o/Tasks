@@ -56,6 +56,8 @@
                                             Click="SwitchTask" >
                                         <Button.ContextMenu>
                                             <ContextMenu>
+                                                <MenuItem Header="Move Up" Click="MoveTaskUp_Click" />
+                                                <MenuItem Header="Move Down" Click="MoveTaskDown_Click" />
                                                 <MenuItem Header="Rename" Click="RenameTask_Click" />
                                                 <MenuItem Header="Remove" Click="RemoveTask_Click"/>
                                             </ContextMenu>

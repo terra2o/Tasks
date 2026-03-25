@@ -12,6 +12,7 @@ dotnet publish \
   -r $RID \
   --self-contained true \
   /p:PublishSingleFile=true \
+  /p:PublishTrimmed=false \
   /p:IncludeNativeLibrariesForSelfExtract=true \
   /p:EnableCompressionInSingleFile=true
 

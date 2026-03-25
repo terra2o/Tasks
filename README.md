@@ -6,8 +6,8 @@
 A minimal desktop to-do app built with Avalonia, designed for instant use with automatic saving and simple local storage.
 
 <p align="center">
-	<img src="Assets/Screenshot_Tasks_Gradia_Dark.png" width="822">
-	<img src="Assets/Screenshot_Tasks_Gradia_White.png" width="822">
+	<img src="packaging/screenshots/tasks1.png" width="822">
+	<img src="packaging/screenshots/tasks2.png" width="822">
 </p>
 
 ## Features

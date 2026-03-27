@@ -385,12 +385,21 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private static string GetDataFilePath()
     {
         string folder;
-        if (OperatingSystem.IsWindows())
-            folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Tasks_terra2o");
-        else if (OperatingSystem.IsMacOS())
-            folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Tasks_terra2o");
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
+        {
+            folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "Tasks_terra2o");
+        }
         else
-            folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "Tasks_terra2o");
+        {
+            var xdgData = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+            folder = !string.IsNullOrEmpty(xdgData)
+                ? xdgData
+                : Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    ".local", "share", "Tasks_terra2o");
+        }
 
         Directory.CreateDirectory(folder);
         return Path.Combine(folder, "tasks.json");

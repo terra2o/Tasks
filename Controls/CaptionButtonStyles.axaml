@@ -1,0 +1,62 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Windows Style Caption Buttons -->
+    <Style Selector="Button.win-caption">
+        <Setter Property="Width" Value="46"/>
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.win-caption:pointerover">
+        <Setter Property="Background" Value="#22888888"/>
+    </Style>
+    <Style Selector="Button.win-caption.close:pointerover">
+        <Setter Property="Background" Value="#E81123"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+
+    <!-- macOS Style Traffic Lights -->
+    <Style Selector="Button.mac-caption">
+        <Setter Property="Width" Value="12"/>
+        <Setter Property="Height" Value="12"/>
+        <Setter Property="Margin" Value="4,0"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.mac-caption.close">
+        <Setter Property="Background" Value="#FF5F56"/>
+    </Style>
+    <Style Selector="Button.mac-caption.minimize">
+        <Setter Property="Background" Value="#FFBD2E"/>
+    </Style>
+    <Style Selector="Button.mac-caption.maximize">
+        <Setter Property="Background" Value="#27C93F"/>
+    </Style>
+
+    <!-- GNOME / Adwaita Style Scaled Down Buttons -->
+    <Style Selector="Button.gnome-caption">
+        <Setter Property="Width" Value="24"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="Margin" Value="5,0"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Background" Value="#1C888888"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.gnome-caption:pointerover">
+        <Setter Property="Background" Value="#33888888"/>
+    </Style>
+    <Style Selector="Button.gnome-caption:pressed">
+        <Setter Property="Background" Value="#55888888"/>
+    </Style>
+</Styles>

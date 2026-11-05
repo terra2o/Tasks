@@ -10,6 +10,7 @@
                 <ColorPaletteResources x:Key="Dark" AltHigh="#FF1F1F1F" AltLow="#FF1F1F1F" AltMedium="#FF1F1F1F" AltMediumHigh="#FF1F1F1F" AltMediumLow="#FF1F1F1F" BaseHigh="White" BaseLow="#ff333333" BaseMedium="#ff9a9a9a" BaseMediumHigh="#ffb4b4b4" BaseMediumLow="#ff676767" ChromeAltLow="#ffb4b4b4" ChromeBlackHigh="#FF1F1F1F" ChromeBlackLow="#ffb4b4b4" ChromeBlackMedium="#FF1F1F1F" ChromeBlackMediumLow="#FF1F1F1F" ChromeDisabledHigh="#ff333333" ChromeDisabledLow="#ff9a9a9a" ChromeGray="Gray" ChromeHigh="Gray" ChromeLow="#28282C" ChromeMedium="#ff1d1d1d" ChromeMediumLow="#ff2c2c2c" ChromeWhite="White" ListLow="#ff1d1d1d" ListMedium="#ff333333" RegionColor="#222226" />
             </FluentTheme.Palettes>
         </FluentTheme>
+        <StyleInclude Source="/Controls/CaptionButtonStyles.axaml"/>
 
         <Style Selector="TextBox">
             <Setter Property="Background"
@@ -29,6 +30,25 @@
         <Style Selector="TextBox:disabled">
             <Setter Property="Background" Value="{DynamicResource ThemeChromeLow}" />
             <Setter Property="BorderBrush" Value="{DynamicResource ThemeChromeDisabledLow}" />
+        </Style>
+
+        <!-- ADWAITA WIDGET STYLING (EXCLUDING CAPTION BUTTONS) -->
+        <Style Selector="Button:not(.win-caption):not(.mac-caption):not(.gnome-caption)">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
+        <Style Selector="FlyoutPresenter">
+            <Setter Property="CornerRadius" Value="10"/>
+        </Style>
+
+        <Style Selector="CheckBox">
+            <Setter Property="CornerRadius" Value="5"/>
         </Style>
     </Application.Styles>
 

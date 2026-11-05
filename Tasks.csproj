@@ -1,12 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <UseCompiledXaml>true</UseCompiledXaml>
     <ApplicationIcon>packaging/Tasks.ico</ApplicationIcon>
+    <UsedAvaloniaProducts></UsedAvaloniaProducts>
   </PropertyGroup>
 
   <ItemGroup>

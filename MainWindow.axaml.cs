@@ -13,6 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Tasks.Controls;
+using Tasks.Platform;
 
 namespace Tasks;
 
@@ -36,6 +38,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private TextBox? _nameBox;
     private Button? _flyoutButton;
+    private Border? _rootWindowBorder;
 
     private bool _suspendSave = false;
 
@@ -48,10 +51,132 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         _nameBox = this.FindControl<TextBox>("NameBox");
         _flyoutButton = this.FindControl<Button>("FlyoutButton");
+        _rootWindowBorder = this.FindControl<Border>("RootWindowBorder");
+
+        ApplyCornerRadius();
+        SetupMacTrafficLights();
 
         // Listens for add/remove so we can autosave the collection change
         Lists.CollectionChanged += Lists_CollectionChanged;
         Opened += OnOpened;
+        ((AvaloniaObject)this).PropertyChanged += OnWindowAvaloniaPropertyChanged;
+    }
+
+    private void SetupMacTrafficLights()
+    {
+        var panel = this.FindControl<StackPanel>("MacTrafficLightsPanel");
+        var titleBar = this.FindControl<CsdTitleBar>("TitleBar");
+        var sidebarTitle = this.FindControl<TextBlock>("SidebarTitleText");
+
+        if (panel == null || titleBar == null) return;
+
+        panel.Children.Clear();
+
+        if (WindowEnvironment.IsMacOS)
+        {
+            panel.IsVisible = true;
+            panel.Children.Add(titleBar.CreateButton(WindowButtonKind.Close));
+            panel.Children.Add(titleBar.CreateButton(WindowButtonKind.Minimize));
+            panel.Children.Add(titleBar.CreateButton(WindowButtonKind.Maximize));
+
+            if (sidebarTitle != null)
+                sidebarTitle.Margin = new Thickness(8, 0, 0, 0);
+        }
+        else
+        {
+            panel.IsVisible = false;
+            if (sidebarTitle != null)
+                sidebarTitle.Margin = new Thickness(16, 0, 0, 0);
+        }
+    }
+
+    private void OnWindowAvaloniaPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == WindowStateProperty)
+        {
+            ApplyCornerRadius();
+        }
+    }
+
+    private void ApplyCornerRadius()
+    {
+        if (_rootWindowBorder != null)
+        {
+            _rootWindowBorder.CornerRadius = WindowEnvironment.GetTargetCornerRadius(WindowState);
+        }
+    }
+
+    private void Resize_Top(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState == WindowState.Normal)
+            BeginResizeDrag(WindowEdge.North, e);
+    }
+
+    private void Resize_Bottom(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState == WindowState.Normal)
+            BeginResizeDrag(WindowEdge.South, e);
+    }
+
+    private void Resize_Left(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState == WindowState.Normal)
+            BeginResizeDrag(WindowEdge.West, e);
+    }
+
+    private void Resize_Right(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState == WindowState.Normal)
+            BeginResizeDrag(WindowEdge.East, e);
+    }
+
+    private void Resize_TopLeft(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState == WindowState.Normal)
+            BeginResizeDrag(WindowEdge.NorthWest, e);
+    }
+
+    private void Resize_TopRight(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState == WindowState.Normal)
+            BeginResizeDrag(WindowEdge.NorthEast, e);
+    }
+
+    private void Resize_BottomLeft(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState == WindowState.Normal)
+            BeginResizeDrag(WindowEdge.SouthWest, e);
+    }
+
+    private void Resize_BottomRight(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState == WindowState.Normal)
+            BeginResizeDrag(WindowEdge.SouthEast, e);
+    }
+
+    private void Header_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+        {
+            if (NativeWindowMenu.TryShowSystemMenu(this, e))
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+
+        if (e.ClickCount == 2 && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            e.Handled = true;
+            return;
+        }
+
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            BeginMoveDrag(e);
+            e.Handled = true;
+        }
     }
 
     private async void OnOpened(object? sender, EventArgs e)
@@ -356,8 +481,8 @@ public class TaskItem : INotifyPropertyChanged
     private string _name = "";
     private bool _isRenaming;
     private string ?_renameBackup;
-    public string Name
     
+    public string Name
     {
         get => _name;
         set

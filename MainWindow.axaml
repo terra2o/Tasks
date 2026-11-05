@@ -1,100 +1,152 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Tasks"
+        xmlns:controls="clr-namespace:Tasks.Controls"
         x:Class="Tasks.MainWindow"
         x:DataType="local:MainWindow"
         MinWidth="400" MinHeight="300"
         Width="700" Height="450"
         WindowStartupLocation="CenterScreen"
         Title="Tasks"
-        Icon="/packaging/io.github.terra2o.Tasks.png">
+        Icon="/packaging/io.github.terra2o.Tasks.png"
+        SystemDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
 
-    <SplitView DisplayMode="Inline"
-               IsPaneOpen="True"
-               OpenPaneLength="260"
-               CompactPaneLength="50">
+    <!-- ROOT GRID WITH RESIZE HANDLES AND MAIN CONTENT -->
+    <Grid>
+        <!-- ROOT WINDOW BORDER FOR CUSTOM CORNER ROUNDING -->
+        <Border x:Name="RootWindowBorder"
+                Background="{DynamicResource SystemRegionBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                ClipToBounds="True">
 
-        <!-- SIDEBAR -->
-        <SplitView.Pane>
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                        HorizontalScrollBarVisibility="Auto" >
-                <Grid RowDefinitions="Auto,*" Margin="8">
+            <!-- ADWAITA TWO-PANE HEADERBAR & CONTENT LAYOUT -->
+            <Grid ColumnDefinitions="260,*" RowDefinitions="44,*">
 
-                    <!-- TOP BAR -->
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                        <TextBlock Text="Tasks" FontWeight="Bold" VerticalAlignment="Center"/>
-                        <Button x:Name="FlyoutButton"
-                                Content="+"
-                                Width="36" Height="36"
-                                HorizontalAlignment="Right"
-                                HorizontalContentAlignment="Center"
-                                VerticalContentAlignment="Center">
-                            <Button.Flyout>
-                                <Flyout>
-                                    <StackPanel Spacing="8" Width="240">
-                                        <TextBox x:Name="NameBox"
-                                                Watermark="Task name"
-                                                MaxLength="30"
-                                                KeyUp="NameBox_KeyUp"/>
-                                        <Button Content="Add" Click="ConfirmAdd"/>
-                                    </StackPanel>
-                                </Flyout>
-                            </Button.Flyout>
-                        </Button>
-                    </Grid>
+                <!-- SIDEBAR HEADER (FAR LEFT HEADER BAR) -->
+                <Grid Grid.Column="0" Grid.Row="0"
+                      ColumnDefinitions="Auto,*,Auto"
+                      Background="{DynamicResource SystemChromeLowColor}"
+                      PointerPressed="Header_PointerPressed"
+                      Margin="0"
+                      ClipToBounds="True">
 
-                    <!-- DYNAMIC BUTTONS -->
-                    <ItemsControl x:Name="SidebarItems"
-                                Grid.Row="1"
-                                ItemsSource="{Binding Lists}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="local:TaskItem">
-                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="2">
+                    <!-- Far Left Buttons (e.g. macOS traffic lights at the far-left of the entire window) -->
+                    <StackPanel Grid.Column="0"
+                                x:Name="MacTrafficLightsPanel"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="12,0,4,0"/>
 
-                                    <Button Content="{Binding Name}"
-                                            IsVisible="{Binding !IsRenaming}"
-                                            Click="SwitchTask" >
-                                        <Button.ContextMenu>
-                                            <ContextMenu>
-                                                <MenuItem Header="Rename" Click="RenameTask_Click" />
-                                                <MenuItem Header="Remove" Click="RemoveTask_Click"/>
-                                            </ContextMenu>
-                                        </Button.ContextMenu>
-                                    </Button>
-                                    <!-- RENAMING BUTTON-->
-                                    <TextBox x:Name="RenameBox" 
-                                            Text="{Binding Name, Mode=TwoWay}"
-                                            IsVisible="{Binding IsRenaming}"
-                                            MaxLength="30"
-                                            Width="80"
-                                            AttachedToVisualTree="RenameBox_AttachedToVisualTree"
-                                            LostFocus="Rename_LostFocus"
-                                            KeyUp="Rename_KeyUp"/>
+                    <TextBlock Grid.Column="1"
+                               Text="Lists"
+                               FontWeight="Bold"
+                               FontSize="14"
+                               VerticalAlignment="Center"
+                               Margin="16,0,0,0"
+                               x:Name="SidebarTitleText"/>
 
-                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
+                    <Button x:Name="FlyoutButton"
+                            Grid.Column="2"
+                            Content="+"
+                            Width="30" Height="30"
+                            Margin="0,0,12,0"
+                            VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            CornerRadius="6">
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Spacing="8" Width="240">
+                                    <TextBox x:Name="NameBox"
+                                             Watermark="Task name"
+                                             MaxLength="30"
+                                             KeyUp="NameBox_KeyUp"/>
+                                    <Button Content="Add" Click="ConfirmAdd"/>
                                 </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
                 </Grid>
-            </ScrollViewer>
-        </SplitView.Pane>
 
-        <!-- MAIN CONTENT -->
-        <SplitView.Content>
-            <Border Padding="12">
-                <ContentControl Content="{Binding SelectedTask}">
-                    <ContentControl.ContentTemplate>
-                        <DataTemplate x:DataType="local:TaskItem">
-                            <TextBox Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                        </DataTemplate>
-                    </ContentControl.ContentTemplate>
-                </ContentControl>
-            </Border>
-        </SplitView.Content>
-    </SplitView>
+                <!-- MAIN HEADER (COMBINED HEADER BAR RIGHT WITH TITLE & CSD BUTTONS) -->
+                <controls:CsdTitleBar Grid.Column="1" Grid.Row="0"
+                                      x:Name="TitleBar"
+                                      Title="Tasks" />
+
+                <!-- SIDEBAR CONTENT -->
+                <Border Grid.Column="0" Grid.Row="1"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="0,1,1,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="SidebarItems"
+                                      Margin="8"
+                                      ItemsSource="{Binding Lists}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:TaskItem">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="2">
+
+                                        <Button Content="{Binding Name}"
+                                                IsVisible="{Binding !IsRenaming}"
+                                                Click="SwitchTask">
+                                            <Button.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Rename" Click="RenameTask_Click"/>
+                                                    <MenuItem Header="Remove" Click="RemoveTask_Click"/>
+                                                </ContextMenu>
+                                            </Button.ContextMenu>
+                                        </Button>
+
+                                        <!-- RENAMING BUTTON-->
+                                        <TextBox x:Name="RenameBox"
+                                                 Text="{Binding Name, Mode=TwoWay}"
+                                                 IsVisible="{Binding IsRenaming}"
+                                                 MaxLength="30"
+                                                 Width="80"
+                                                 AttachedToVisualTree="RenameBox_AttachedToVisualTree"
+                                                 LostFocus="Rename_LostFocus"
+                                                 KeyUp="Rename_KeyUp"/>
+
+                                        <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- MAIN VIEW CONTENT -->
+                <Border Grid.Column="1" Grid.Row="1"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="0,1,0,0"
+                        Padding="12">
+                    <ContentControl Content="{Binding SelectedTask}">
+                        <ContentControl.ContentTemplate>
+                            <DataTemplate x:DataType="local:TaskItem">
+                                <TextBox Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                            </DataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+                </Border>
+
+            </Grid>
+        </Border>
+
+        <!-- WINDOW RESIZE HANDLES FOR BORDERLESS CSD -->
+        <Border Height="6" VerticalAlignment="Top" Background="Transparent" Cursor="TopSide" PointerPressed="Resize_Top"/>
+        <Border Height="6" VerticalAlignment="Bottom" Background="Transparent" Cursor="BottomSide" PointerPressed="Resize_Bottom"/>
+        <Border Width="6" HorizontalAlignment="Left" Background="Transparent" Cursor="LeftSide" PointerPressed="Resize_Left"/>
+        <Border Width="6" HorizontalAlignment="Right" Background="Transparent" Cursor="RightSide" PointerPressed="Resize_Right"/>
+
+        <Border Width="10" Height="10" HorizontalAlignment="Left" VerticalAlignment="Top" Background="Transparent" Cursor="TopLeftCorner" PointerPressed="Resize_TopLeft"/>
+        <Border Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Top" Background="Transparent" Cursor="TopRightCorner" PointerPressed="Resize_TopRight"/>
+        <Border Width="10" Height="10" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="Transparent" Cursor="BottomLeftCorner" PointerPressed="Resize_BottomLeft"/>
+        <Border Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="Transparent" Cursor="BottomRightCorner" PointerPressed="Resize_BottomRight"/>
+    </Grid>
 </Window>

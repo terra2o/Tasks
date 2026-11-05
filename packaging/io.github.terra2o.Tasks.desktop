@@ -1,9 +1,10 @@
 [Desktop Entry]
 Name=Tasks
 Comment=Task and to-do manager
-Exec=Tasks
+Exec=Tasks %f
 Icon=io.github.terra2o.Tasks
 Terminal=false
 Type=Application
 Categories=Utility;
 StartupWMClass=Tasks
+MimeType=application/vnd.io.github.terra2o.Tasks

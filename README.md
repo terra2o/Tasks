@@ -21,7 +21,7 @@ Go to [here](https://github.com/terra2o/Tasks/releases/) and download the latest
 
 ## Building
 ### Prerequisites
-- .NET 9.0
+- .NET 10.0
 - git
 
 ### Linux

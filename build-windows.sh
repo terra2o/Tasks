@@ -15,7 +15,7 @@ dotnet publish "$APP_NAME.csproj" \
   -p:IncludeNativeLibrariesForSelfExtract=true \
   -p:EnableCompressionInSingleFile=true
 
-EXE_PATH="bin/$CONFIG/net9.0/$RID/publish/$APP_NAME.exe"
+EXE_PATH="bin/$CONFIG/net10.0/$RID/publish/$APP_NAME.exe"
 
 if [[ ! -f "$EXE_PATH" ]]; then
   echo "EXE not found at $EXE_PATH"

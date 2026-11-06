@@ -12,22 +12,39 @@ public static class NativeWindowMenu
     private const long SubstructureRedirectMask = 0x00080000;
     private const long SubstructureNotifyMask = 0x00040000;
 
-    [DllImport("libX11", EntryPoint = "XOpenDisplay")]
+    static NativeWindowMenu()
+    {
+        NativeLibrary.SetDllImportResolver(typeof(NativeWindowMenu).Assembly, (name, assembly, path) =>
+        {
+            if (name == "libX11" || name == "libX11.so.6")
+            {
+                string[] candidates = { "libX11.so.6", "libX11.so", "libX11" };
+                foreach (var candidate in candidates)
+                {
+                    if (NativeLibrary.TryLoad(candidate, assembly, path, out var handle))
+                        return handle;
+                }
+            }
+            return IntPtr.Zero;
+        });
+    }
+
+    [DllImport("libX11.so.6", EntryPoint = "XOpenDisplay")]
     private static extern IntPtr XOpenDisplay(string? display_name);
 
-    [DllImport("libX11", EntryPoint = "XCloseDisplay")]
+    [DllImport("libX11.so.6", EntryPoint = "XCloseDisplay")]
     private static extern int XCloseDisplay(IntPtr display);
 
-    [DllImport("libX11", EntryPoint = "XInternAtom")]
+    [DllImport("libX11.so.6", EntryPoint = "XInternAtom")]
     private static extern IntPtr XInternAtom(IntPtr display, string atom_name, bool only_if_exists);
 
-    [DllImport("libX11", EntryPoint = "XDefaultRootWindow")]
+    [DllImport("libX11.so.6", EntryPoint = "XDefaultRootWindow")]
     private static extern IntPtr XDefaultRootWindow(IntPtr display);
 
-    [DllImport("libX11", EntryPoint = "XSendEvent")]
+    [DllImport("libX11.so.6", EntryPoint = "XSendEvent")]
     private static extern int XSendEvent(IntPtr display, IntPtr w, bool propagate, long event_mask, ref XClientMessageEvent event_send);
 
-    [DllImport("libX11", EntryPoint = "XFlush")]
+    [DllImport("libX11.so.6", EntryPoint = "XFlush")]
     private static extern int XFlush(IntPtr display);
 
     [StructLayout(LayoutKind.Sequential)]
@@ -47,7 +64,6 @@ public static class NativeWindowMenu
         public IntPtr ptr5;
     }
 
-    // Windows P/Invoke for Win32 system menu
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
 
@@ -69,48 +85,50 @@ public static class NativeWindowMenu
 
         var screenPoint = window.PointToScreen(e.GetPosition(window));
 
-        // Linux X11: Send _GTK_SHOW_WINDOW_MENU client message to root window
+        // send _GTK_SHOW_WINDOW_MENU client message to root window
         if (WindowEnvironment.IsGnomeOrLinux)
         {
             try
             {
                 var display = XOpenDisplay(null);
-                if (display == IntPtr.Zero)
-                    return false;
-
-                try
+                if (display != IntPtr.Zero)
                 {
-                    var atom = XInternAtom(display, "_GTK_SHOW_WINDOW_MENU", false);
-                    var root = XDefaultRootWindow(display);
-
-                    var msg = new XClientMessageEvent
+                    try
                     {
-                        type = ClientMessage,
-                        display = display,
-                        window = platformHandle.Handle,
-                        message_type = atom,
-                        format = 32,
-                        ptr1 = IntPtr.Zero, // device id
-                        ptr2 = (IntPtr)screenPoint.X,
-                        ptr3 = (IntPtr)screenPoint.Y
-                    };
+                        var atom = XInternAtom(display, "_GTK_SHOW_WINDOW_MENU", false);
+                        var root = XDefaultRootWindow(display);
 
-                    XSendEvent(display, root, false, SubstructureRedirectMask | SubstructureNotifyMask, ref msg);
-                    XFlush(display);
-                    return true;
-                }
-                finally
-                {
-                    XCloseDisplay(display);
+                        var msg = new XClientMessageEvent
+                        {
+                            type = ClientMessage,
+                            display = display,
+                            window = platformHandle.Handle,
+                            message_type = atom,
+                            format = 32,
+                            ptr1 = IntPtr.Zero,
+                            ptr2 = (IntPtr)screenPoint.X,
+                            ptr3 = (IntPtr)screenPoint.Y
+                        };
+
+                        XSendEvent(display, root, false, SubstructureRedirectMask | SubstructureNotifyMask, ref msg);
+                        XFlush(display);
+                        return true;
+                    }
+                    finally
+                    {
+                        XCloseDisplay(display);
+                    }
                 }
             }
             catch
             {
-                return false;
+                // fallback if x11 call fails
             }
+
+            ShowFallbackAdwaitaMenu(window, e);
+            return true;
         }
 
-        // Windows: TrackPopupMenu with native GetSystemMenu
         if (WindowEnvironment.IsWindows)
         {
             try
@@ -133,5 +151,32 @@ public static class NativeWindowMenu
         }
 
         return false;
+    }
+
+    private static void ShowFallbackAdwaitaMenu(Window window, PointerPressedEventArgs e)
+    {
+        var menu = new ContextMenu
+        {
+            Placement = PlacementMode.Pointer
+        };
+
+        var isMaximized = window.WindowState == WindowState.Maximized;
+
+        var minimizeItem = new MenuItem { Header = "Minimize" };
+        minimizeItem.Click += (_, _) => window.WindowState = WindowState.Minimized;
+
+        var maximizeItem = new MenuItem { Header = isMaximized ? "Restore" : "Maximize" };
+        maximizeItem.Click += (_, _) => window.WindowState = isMaximized ? WindowState.Normal : WindowState.Maximized;
+
+        var closeItem = new MenuItem { Header = "Close" };
+        closeItem.Click += (_, _) => window.Close();
+
+        menu.Items.Add(minimizeItem);
+        menu.Items.Add(maximizeItem);
+        menu.Items.Add(new Separator());
+        menu.Items.Add(closeItem);
+
+        var target = (e.Source as Control) ?? window;
+        menu.Open(target);
     }
 }

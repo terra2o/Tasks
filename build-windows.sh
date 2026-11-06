@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Disable MSBuild server daemon to avoid preview SDK globbing caching bugs
+export DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER=1
+
 APP_NAME="Tasks"
 CONFIG="Release"
 RID="win-x64"
@@ -13,7 +16,8 @@ dotnet publish "$APP_NAME.csproj" \
   --self-contained true \
   -p:PublishSingleFile=true \
   -p:IncludeNativeLibrariesForSelfExtract=true \
-  -p:EnableCompressionInSingleFile=true
+  -p:EnableCompressionInSingleFile=true \
+  -nodeReuse:false
 
 EXE_PATH="bin/$CONFIG/net10.0/$RID/publish/$APP_NAME.exe"
 

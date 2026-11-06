@@ -12,6 +12,9 @@ public static class LinuxIconThemeResolver
     {
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "icons"),
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".icons"),
+        "/var/data/icons",
+        "/run/host/user-share/icons",
+        "/run/host/share/icons",
         "/usr/local/share/icons",
         "/usr/share/icons"
     };

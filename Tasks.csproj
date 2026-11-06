@@ -8,6 +8,7 @@
     <UseCompiledXaml>true</UseCompiledXaml>
     <ApplicationIcon>packaging/Tasks.ico</ApplicationIcon>
     <UsedAvaloniaProducts></UsedAvaloniaProducts>
+    <DefaultItemExcludes>$(DefaultItemExcludes);build-dir/**;.flatpak-builder/**;repo/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
